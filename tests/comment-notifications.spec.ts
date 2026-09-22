@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type Browser, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext } from '@playwright/test';
+import { EditorListPage, InboxPage, ProfilePage, SharedListPage } from './pages/kis-list.pages';
 
 const ownerAuth = join('playwright', '.auth', 'owner.json');
 const memberAuth = join('playwright', '.auth', 'member.json');
@@ -34,69 +35,62 @@ function testData(): { sharedListUrl: string; editorListUrl: string; listName: s
   return { sharedListUrl, editorListUrl, listName, memberEmail, productName };
 }
 
-async function notificationCount(page: Page, comment: string): Promise<number> {
-  await page.reload();
-  await expect(page.getByRole('button', { name: /Powiadomienia/ }).first()).toBeVisible();
-  return page.getByText(comment, { exact: true }).count();
-}
-
-async function openInbox(browser: Browser, storageState: string): Promise<{ page: Page; profileEmail: string; close: () => Promise<void> }> {
-  const context = await browser.newContext({ storageState });
-  const page = await context.newPage();
-  const baseUrl = process.env.KIS_BASE_URL ?? 'https://kislist.com';
-  await page.goto(new URL('/profile', baseUrl).toString());
-  const profileEmail = await page.getByRole('textbox', { name: 'Adres e-mail' }).inputValue();
-  await page.goto(new URL('/inbox', baseUrl).toString());
-  return { page, profileEmail, close: () => context.close() };
-}
-
-test('komentarz klienta do udostępnionej listy powiadamia właściciela i członka zespołu', async ({ browser }) => {
-  test.setTimeout(60_000);
+test('komentarz klienta do udostępnionej listy powiadamia właściciela i członka zespołu', async ({ browser, page: clientPage }) => {
+  // Dwa oczekiwania po 30 s oraz logowanie i kontrola członkostwa muszą zmieścić się w limicie testu.
+  test.setTimeout(90_000);
   const { sharedListUrl, editorListUrl, listName, memberEmail, productName } = testData();
+  const baseUrl = process.env.KIS_BASE_URL ?? 'https://kislist.com';
   const comment = `QA-E2E-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-  const clientContext = await browser.newContext();
-  const owner = await openInbox(browser, ownerAuth);
-  const member = await openInbox(browser, memberAuth);
+  let ownerContext: BrowserContext | undefined;
+  let memberContext: BrowserContext | undefined;
 
   try {
-    expect(member.profileEmail.toLowerCase(), 'Sesja pracownika musi należeć do członka przypisanego do listy.').toBe(memberEmail.toLowerCase());
-    expect(member.profileEmail.toLowerCase(), 'Sesje właściciela i pracownika muszą należeć do różnych kont.').not.toBe(owner.profileEmail.toLowerCase());
+    ownerContext = await browser.newContext({ storageState: ownerAuth });
+    memberContext = await browser.newContext({ storageState: memberAuth });
+    const ownerPage = await ownerContext.newPage();
+    const memberPage = await memberContext.newPage();
+    const ownerProfile = new ProfilePage(ownerPage, baseUrl);
+    const memberProfile = new ProfilePage(memberPage, baseUrl);
+    const ownerList = new EditorListPage(ownerPage, editorListUrl);
+    const memberList = new EditorListPage(memberPage, editorListUrl);
+    const sharedList = new SharedListPage(clientPage, sharedListUrl);
+    const ownerInbox = new InboxPage(ownerPage, baseUrl);
+    const memberInbox = new InboxPage(memberPage, baseUrl);
 
-    await owner.page.goto(editorListUrl);
-    await owner.page.locator('[title="Dodaj członka zespołu lub współpracownika"]').click();
-    await expect(owner.page.getByRole('dialog').getByText(memberEmail, { exact: true })).toBeVisible();
-    await owner.page.goto(new URL('/inbox', process.env.KIS_BASE_URL ?? 'https://kislist.com').toString());
+    await ownerProfile.open();
+    const ownerEmail = await ownerProfile.email();
+    await memberProfile.open();
+    const actualMemberEmail = await memberProfile.email();
+    expect(actualMemberEmail.toLowerCase(), 'Sesja pracownika musi należeć do członka przypisanego do listy.').toBe(memberEmail.toLowerCase());
+    expect(actualMemberEmail.toLowerCase(), 'Sesje właściciela i pracownika muszą należeć do różnych kont.').not.toBe(ownerEmail.toLowerCase());
 
-    await member.page.goto(editorListUrl);
-    await expect(member.page.getByText(listName, { exact: true }).first()).toBeVisible();
-    await member.page.goto(new URL('/inbox', process.env.KIS_BASE_URL ?? 'https://kislist.com').toString());
+    await ownerList.open();
+    await ownerList.openMembers();
+    await expect(ownerList.member(memberEmail)).toBeVisible();
+    await ownerInbox.open();
 
-    const clientPage = await clientContext.newPage();
-    await clientPage.goto(sharedListUrl);
-    await expect(clientPage.getByText(listName, { exact: true }).first()).toBeVisible();
+    await memberList.open();
+    await expect(memberList.listName(listName)).toBeVisible();
+    await memberInbox.open();
 
-    // Produkt identyfikujemy po nazwie, bo przycisk komentarza powtarza się przy każdym produkcie.
-    const product = clientPage
-      .getByRole('img', { name: productName })
-      .locator('xpath=ancestor::*[.//button[normalize-space()="Napisz komentarz"]][1]');
-    await product.getByRole('button', { name: 'Napisz komentarz' }).click();
-    await clientPage.locator('[contenteditable="true"][role="textbox"]').fill(comment);
-    await clientPage.getByRole('button', { name: 'Wyślij', exact: true }).click();
-    await expect(product.getByText(comment, { exact: true })).toBeVisible();
+    await sharedList.open();
+    await expect(sharedList.listName(listName)).toBeVisible();
+    await sharedList.addProductComment(productName, comment);
+    await expect(sharedList.comment(productName, comment)).toBeVisible();
 
-    await expect.poll(() => notificationCount(owner.page, comment), {
+    await expect.poll(() => ownerInbox.notificationCount(comment), {
       message: 'Powiadomienie kontrolne powinno dotrzeć do właściciela listy.',
       timeout: 30_000,
       intervals: [1_000, 2_000, 3_000],
     }).toBe(1);
 
-    await expect.poll(() => notificationCount(member.page, comment), {
+    await expect.poll(() => memberInbox.notificationCount(comment), {
       message: 'Komentarz klienta powinien powiadomić także przypisanego członka zespołu.',
       timeout: 30_000,
       intervals: [1_000, 2_000, 3_000],
     }).toBe(1);
   } finally {
-    await Promise.all([clientContext.close(), owner.close(), member.close()]);
+    await Promise.all([ownerContext?.close(), memberContext?.close()]);
   }
 });

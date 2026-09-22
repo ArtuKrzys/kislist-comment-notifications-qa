@@ -63,7 +63,7 @@ Wcześniejszy komentarz wpisany w podglądzie klienta przy aktywnej sesji właś
 
 ## Test E2E
 
-Test `tests/comment-notifications.spec.ts` otwiera udostępnioną listę w świeżej, niezalogowanej sesji klienta i dodaje komentarz o unikalnej treści. Następnie sprawdza powiadomienie na koncie właściciela jako kontrolę pozytywną oraz na koncie pracownika. Oczekiwana asercja pracownika **powinna obecnie nie przechodzić**, dopóki błąd nie zostanie naprawiony.
+Test `tests/comment-notifications.spec.ts` otwiera udostępnioną listę w świeżej, niezalogowanej sesji klienta i dodaje komentarz o unikalnej treści. Następnie sprawdza powiadomienie na koncie właściciela jako kontrolę pozytywną oraz na koncie pracownika. Oczekiwana asercja pracownika **powinna obecnie nie przechodzić**, dopóki błąd nie zostanie naprawiony. Operacje na profil, listę i Inbox znajdują się w obiektach stron w `tests/pages/`; asercje biznesowe pozostają w teście.
 
 Test wymaga dwóch różnych, potwierdzonych kont powiązanych z listą. Logowanie SMS wykonuje się raz dla każdej roli; stan sesji jest zapisany lokalnie w `playwright/.auth/` i wykluczony z Git. [Playwright zaleca przechowywanie plików storage state poza repozytorium](https://playwright.dev/docs/auth), ponieważ mogą zawierać dane pozwalające przejąć sesję.
 
@@ -91,7 +91,7 @@ Test tworzy jeden komentarz na uruchomienie. Wyłączono automatyczne ponawianie
 
 ### Status walidacji kodu
 
-`npm run typecheck`, `npm run test:list` i `node --check scripts/save-auth.mjs` zakończyły się poprawnie. `npm audit` nie wykazał znanych podatności. Po zapisaniu sesji obu kont uruchomiono pełny test E2E: komentarz klienta został dodany, powiadomienie właściciela zostało znalezione, a asercja pracownika zakończyła się wynikiem `Expected: 1, Received: 0`. To oczekiwany czerwony wynik testu regresyjnego dla BUG-001. Uruchomienie bez plików sesji kończy się czytelnym błędem konfiguracji przed dodaniem komentarza; nie jest to wynik regresji produktu.
+`npm run typecheck`, `npm run test:list` i `node --check scripts/save-auth.mjs` zakończyły się poprawnie. `npm audit` nie wykazał znanych podatności. Po zapisaniu sesji obu kont uruchomiono pełny test E2E, także ponownie po wydzieleniu Page Object Model (`npx playwright test tests/comment-notifications.spec.ts`, 45,2 s): komentarz klienta został dodany, powiadomienie właściciela zostało znalezione, a asercja pracownika zakończyła się wynikiem `Expected: 1, Received: 0`. To oczekiwany czerwony wynik testu regresyjnego dla BUG-001. Uruchomienie bez plików sesji kończy się czytelnym błędem konfiguracji przed dodaniem komentarza; nie jest to wynik regresji produktu.
 
 ## Ograniczenia i dalsze kroki
 
@@ -99,3 +99,4 @@ Test tworzy jeden komentarz na uruchomienie. Wyłączono automatyczne ponawianie
 - Nie badano konta spoza listy, zmian członkostwa, powiadomień e-mail ani API.
 - Pełny test P-03 wymaga sprawdzenia powiadomienia u pozostałego członka zespołu po prywatnym komentarzu pracownika.
 - Edytor komentarza nie miał jednoznacznej nazwy dostępnościowej; test używa `contenteditable` z rolą `textbox`. Zalecany stabilny atrybut dla aplikacji: `data-testid="client-comment-editor"`.
+- Kontener produktu jest obecnie wyszukiwany względem obrazka i przycisku komentarza. Stabilny `data-testid="client-product-card"` z identyfikatorem produktu ograniczyłby zależność od struktury DOM.
