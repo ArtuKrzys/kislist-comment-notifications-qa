@@ -20,7 +20,7 @@ Nie udało się aktywować większej liczby kont pracowników ani współpracown
 | --- | --- | --- | --- |
 | P-01 | Pozytywny | Klient dodaje komentarz do wysłanej propozycji. Sprawdzić każdego potwierdzonego członka powiązanego z listą. | Każdy otrzymuje jedno powiadomienie o właściwej propozycji i komentarzu. |
 | P-02 | Pozytywny | Klient dodaje komentarz do produktu w udostępnionej liście. Sprawdzić właściciela i pracownika. | Oba konta otrzymują powiadomienie o właściwej liście, produkcie i komentarzu. |
-| P-03 | Pozytywny | Członek zespołu dodaje prywatny komentarz do elementu listy. Sprawdzić pozostałe konta. | Pozostali przypisani członkowie otrzymują powiadomienie. |
+| P-03 | Pozytywny | Członek zespołu dodaje komentarz do elementu listy: w karcie **Prywatne** oraz w karcie **Komentarze klienta**. Sprawdzić pozostałe konta. | Pozostali przypisani członkowie otrzymują powiadomienie o każdym komentarzu. |
 | N-01 | Negatywny | Autor będący członkiem zespołu sprawdza własny Inbox po dodaniu prywatnego komentarza. | Autor nie dostaje powiadomienia o własnym komentarzu. |
 | N-02 | Negatywny | Sprawdzić konto niepowiązane z listą po komentarzu. | Brak powiadomienia dla osoby spoza listy. |
 | N-03 | Negatywny | Dodać komentarz do innej listy. | Członkowie niezwiązanej listy nie dostają powiadomienia. |
@@ -35,9 +35,9 @@ Każdy test powinien używać rozpoznawalnej, unikalnej treści komentarza. Przy
 | ID | Wynik | Faktyczny rezultat i dowód |
 | --- | --- | --- |
 | P-02 | **FAIL** | Komentarz w udostępnionej liście został zapisany jako `Klient`. Właściciel zobaczył w Inbox powiadomienie „Klient/ka dodał/a komentarz” z listą `KOSZTORYS` i właściwym produktem. Potwierdzony członek zespołu widział projekt i listę, ale po zalogowaniu nie miał powiadomienia w dzwonku ani Inbox (liczniki `0`). Brak powiadomienia pracownik potwierdził również ręcznie. |
-| N-01 | **PASS** | Właściciel dodał prywatny komentarz `QA-N01-20260922` do elementu listy. Komentarz był widoczny przy produkcie; autor nie otrzymał własnego powiadomienia. Powtórzono kontrolę dla komentarza pracownika `QA-P03-1790065421989`: również nie pojawił się w jego Inbox. |
+| N-01 | **PASS** | Właściciel dodał prywatny komentarz `QA-N01-20260922` do elementu listy. Komentarz był widoczny przy produkcie; autor nie otrzymał własnego powiadomienia. Powtórzono kontrolę dla komentarzy pracownika `QA-P03-1790065421989` i `QA-P03K-1790067502678`: również nie pojawiły się w jego Inbox. |
 | P-01 | **NIE WYKONANO** | Wcześniej dostępna propozycja była szkicem. W ponownej próbie znaleziono link do przesłanej propozycji, lecz niezalogowany podgląd wyświetlał „PROPOZYCJA NIE JEST JUŻ DOSTĘPNA”, także po odświeżeniu. Nie wysyłano nowej propozycji. |
-| P-03 | **FAIL** | Pracownik dodał prywatny komentarz `QA-P03-1790065421989` do produktu „Dywan shaggy - Carvy Arches Kremowy”. Właściciel widział komentarz i autora `Test Test` przy produkcie, ale po ponad minucie i ponownym wejściu do Inbox nie miał powiadomienia z tą treścią. Szczegóły: BUG-002. |
+| P-03 | **FAIL** | Pracownik dodał do produktu „Dywan shaggy - Carvy Arches Kremowy” komentarz prywatny `QA-P03-1790065421989` oraz osobny komentarz w karcie **Komentarze klienta** `QA-P03K-1790067502678`. Właściciel widział oba komentarze i autora `Test Test` przy produkcie, ale nie miał powiadomienia o żadnym z nich. Drugi wynik sprawdzono ponownie po ponad dwóch minutach. Szczegóły: BUG-002. |
 | N-02 | **NIE WYKONANO** | Brak aktywnego konta spoza listy; rejestracja wymaga dodatkowego numeru telefonu i kodu SMS. |
 | N-03 | **NIE WYKONANO** | Próba przygotowania drugiej listy nie dała izolacji: pracownik został na niej automatycznie ujęty wśród członków i mógł ją otworzyć. Testową listę przeniesiono do kosza. Nie uznano tej próby za dowód braku powiadomienia u osoby spoza listy. |
 | N-04 | **PASS — wariant anonimowy** | Otwarcie prywatnego adresu edycji listy w niezalogowanej sesji przekierowało na `/logowanie`; nie było możliwości dodania tam komentarza. Nie sprawdzano konta zalogowanego bez uprawnień. |
@@ -66,23 +66,23 @@ Wcześniejszy komentarz wpisany w podglądzie klienta przy aktywnej sesji właś
 
 **Dowód:** zgodność autora komentarza (`Klient`) i powiadomienia właściciela z właściwą listą oraz produktem; na koncie przypisanego pracownika brak powiadomień. Dane i adresy kont pominięto w publicznym raporcie.
 
-## BUG-002 — prywatny komentarz pracownika nie powiadamia właściciela listy
+## BUG-002 — komentarze pracownika do elementu listy nie powiadamiają właściciela
 
 **Środowisko:** ta sama lista `KOSZTORYS`, dwa potwierdzone konta zespołu, Chrome, 22.09.2026.
 
 **Kroki odtworzenia:**
 
-1. Na koncie przypisanego pracownika otworzyć komentarze produktu „Dywan shaggy - Carvy Arches Kremowy” i kartę **Prywatne**.
-2. Dodać komentarz bez oznaczenia `@`, np. `QA-P03-1790065421989`.
-3. Na koncie właściciela sprawdzić ten sam produkt i Inbox.
+1. Na koncie przypisanego pracownika otworzyć komentarze produktu „Dywan shaggy - Carvy Arches Kremowy”.
+2. Dodać komentarz bez oznaczenia `@` w karcie **Prywatne**, np. `QA-P03-1790065421989`. Powtórzyć z odrębną treścią w karcie **Komentarze klienta**, np. `QA-P03K-1790067502678`.
+3. Na koncie właściciela sprawdzić ten sam produkt oraz aktywne i wyczyszczone powiadomienia w Inbox.
 
 **Oczekiwane:** właściciel jako pozostały członek zespołu otrzymuje powiadomienie o komentarzu; autor nie otrzymuje własnego.
 
-**Faktyczne:** komentarz pracownika jest widoczny u właściciela przy produkcie, ale powiadomienie o nim nie pojawia się w Inbox właściciela nawet po ponad minucie i ponownym wejściu. Autor nie otrzymał własnego powiadomienia.
+**Faktyczne:** oba komentarze pracownika są widoczne u właściciela przy produkcie, ale powiadomienia o nich nie ma w aktywnej ani wyczyszczonej zakładce Inbox. Drugi przypadek sprawdzono ponownie po ponad dwóch minutach. Autor nie otrzymał własnego powiadomienia.
 
 **Waga / priorytet:** Major / High — pozostały członek zespołu może przeoczyć ustalenia pracownika.
 
-**Dowód:** unikalna treść komentarza i jego autor w prywatnych komentarzach po obu stronach, przy braku tej treści w Inbox odbiorcy. Jest to osobna obserwacja manualna; obecny test E2E odtwarza BUG-001.
+**Dowód:** dwie unikalne treści i autor w odpowiednich kartach komentarzy po obu stronach, przy braku tych treści w obu zakładkach Inbox odbiorcy. Wynik dotyczy tej listy i tych dwóch kont; nie dowodzi, że problem występuje u każdego zespołu. Jest to obserwacja manualna; obecny test E2E odtwarza BUG-001.
 
 ## Test E2E
 
