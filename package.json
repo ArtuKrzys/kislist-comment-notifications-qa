@@ -1,0 +1,21 @@
+{
+  "name": "kislist-comment-notifications-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "auth:owner": "node scripts/save-auth.mjs owner",
+    "auth:member": "node scripts/save-auth.mjs member",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:list": "playwright test --list",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.13.1",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
