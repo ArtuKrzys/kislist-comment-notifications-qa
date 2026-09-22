@@ -26,6 +26,7 @@ Nie udało się aktywować większej liczby kont pracowników ani współpracown
 | N-03 | Negatywny | Dodać komentarz do innej listy. | Członkowie niezwiązanej listy nie dostają powiadomienia. |
 | N-04 | Negatywny | Spróbować komentować listę bez dostępu. | Brak możliwości dodania komentarza i wygenerowania powiadomienia. |
 | B-01 | Brzegowy | Odświeżyć Inbox i ponownie wejść na konto odbiorcy. | Powiadomienie pozostaje dostępne i nie powstaje duplikat. |
+| M-01 | Eksploracyjny | Dodać komentarz z oznaczeniem `@` członka zespołu w każdym dostępnym typie komentarza. Sprawdzić autora, osobę oznaczoną i pozostałych członków. | Zweryfikować reguły P-01–P-03 oraz odnotować ewentualne dodatkowe powiadomienia i duplikaty. Mail nie określa osobnych reguł powiadomień dla oznaczeń. |
 
 Każdy test powinien używać rozpoznawalnej, unikalnej treści komentarza. Przy ocenie należy sprawdzić **tożsamość autora**: otwarcie linku klienta w sesji zalogowanego pracownika powoduje zapis komentarza pod jego kontem i nie testuje zdarzenia klienta.
 
@@ -38,6 +39,7 @@ Każdy test powinien używać rozpoznawalnej, unikalnej treści komentarza. Przy
 | P-01 | **NIE WYKONANO** | Dostępny podgląd propozycji był oznaczony jako szkic. Nie wysyłano nowej propozycji testowej. |
 | P-03 | **CZĘŚCIOWO** | Potwierdzono zapis prywatnego komentarza i brak powiadomienia autora (N-01). Nie zweryfikowano dostarczenia do pozostałych członków. |
 | N-02, N-03, N-04, B-01 | **NIE WYKONANO** | Nie przygotowano konta spoza listy ani odrębnej listy testowej; nie badano także trwałości i duplikatów w pełnym cyklu. |
+| M-01 | **NIE WYKONANO** | Mechanizm `@` wskazano w opisie zadania, lecz nie podano osobnych reguł odbiorców; scenariusz pozostaje do eksploracji. |
 
 Wcześniejszy komentarz wpisany w podglądzie klienta przy aktywnej sesji właściciela został zapisany pod jego nazwą. Tę próbę wyłączono z oceny P-02. Nie stanowi dowodu błędu ani poprawnego działania powiadomień klienta.
 
