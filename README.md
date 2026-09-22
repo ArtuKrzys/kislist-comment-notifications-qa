@@ -89,7 +89,7 @@ Test tworzy jeden komentarz na uruchomienie. Wyłączono automatyczne ponawianie
 
 ### Status walidacji kodu
 
-`npm run typecheck`, `npm run test:list` i `node --check scripts/save-auth.mjs` zakończyły się poprawnie. `npm audit` nie wykazał znanych podatności. Pełny przebieg E2E wymaga lokalnie zapisanych sesji obu kont po logowaniu SMS. Uruchomienie bez tych plików kończy się czytelnym błędem konfiguracji przed dodaniem komentarza; nie jest to wynik regresji produktu.
+`npm run typecheck`, `npm run test:list` i `node --check scripts/save-auth.mjs` zakończyły się poprawnie. `npm audit` nie wykazał znanych podatności. Po zapisaniu sesji obu kont uruchomiono pełny test E2E: komentarz klienta został dodany, powiadomienie właściciela zostało znalezione, a asercja pracownika zakończyła się wynikiem `Expected: 1, Received: 0`. To oczekiwany czerwony wynik testu regresyjnego dla BUG-001. Uruchomienie bez plików sesji kończy się czytelnym błędem konfiguracji przed dodaniem komentarza; nie jest to wynik regresji produktu.
 
 ## Ograniczenia i dalsze kroki
 

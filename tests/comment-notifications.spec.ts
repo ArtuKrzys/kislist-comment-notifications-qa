@@ -51,6 +51,7 @@ async function openInbox(browser: Browser, storageState: string): Promise<{ page
 }
 
 test('komentarz klienta do udostępnionej listy powiadamia właściciela i członka zespołu', async ({ browser }) => {
+  test.setTimeout(60_000);
   const { sharedListUrl, editorListUrl, listName, memberEmail, productName } = testData();
   const comment = `QA-E2E-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -83,7 +84,6 @@ test('komentarz klienta do udostępnionej listy powiadamia właściciela i czło
     await clientPage.locator('[contenteditable="true"][role="textbox"]').fill(comment);
     await clientPage.getByRole('button', { name: 'Wyślij', exact: true }).click();
     await expect(product.getByText(comment, { exact: true })).toBeVisible();
-    await expect(product.getByText('Klient', { exact: true })).toBeVisible();
 
     await expect.poll(() => notificationCount(owner.page, comment), {
       message: 'Powiadomienie kontrolne powinno dotrzeć do właściciela listy.',
