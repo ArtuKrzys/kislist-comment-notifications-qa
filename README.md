@@ -12,6 +12,8 @@ Repozytorium zawiera plan i wyniki testów manualnych oraz jeden test regresyjny
 
 Testowano projekt rekrutacyjny i listę `KOSZTORYS` w KIS List (22.09.2026, Chrome). Do listy byli przypisani właściciel i jeden potwierdzony członek zespołu. Trzecie zaproszenie nie było potwierdzone. W celu zachowania prywatności raport nie zawiera danych logowania, pełnych linków udostępnienia ani zrzutów z danymi kont.
 
+Nie udało się aktywować większej liczby kont pracowników ani współpracowników. Rejestracja wymaga prawdziwego numeru telefonu do odebrania kodu SMS, a w testach nie było dostępnych dodatkowych numerów. Ograniczyło to sprawdzenie powiadomień dla większego zespołu oraz scenariusza z kontem spoza listy.
+
 ## Plan testów manualnych
 
 | ID | Typ | Warunki i czynności | Oczekiwany wynik |
