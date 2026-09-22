@@ -35,11 +35,14 @@ Każdy test powinien używać rozpoznawalnej, unikalnej treści komentarza. Przy
 | ID | Wynik | Faktyczny rezultat i dowód |
 | --- | --- | --- |
 | P-02 | **FAIL** | Komentarz w udostępnionej liście został zapisany jako `Klient`. Właściciel zobaczył w Inbox powiadomienie „Klient/ka dodał/a komentarz” z listą `KOSZTORYS` i właściwym produktem. Potwierdzony członek zespołu widział projekt i listę, ale po zalogowaniu nie miał powiadomienia w dzwonku ani Inbox (liczniki `0`). Brak powiadomienia pracownik potwierdził również ręcznie. |
-| N-01 | **PASS** | Właściciel dodał prywatny komentarz `QA-N01-20260922` do elementu listy. Komentarz był widoczny przy produkcie; autor nie otrzymał własnego powiadomienia po odświeżeniu Inbox. |
-| P-01 | **NIE WYKONANO** | Dostępny podgląd propozycji był oznaczony jako szkic. Nie wysyłano nowej propozycji testowej. |
-| P-03 | **CZĘŚCIOWO** | Potwierdzono zapis prywatnego komentarza i brak powiadomienia autora (N-01). Nie zweryfikowano dostarczenia do pozostałych członków. |
-| N-02, N-03, N-04, B-01 | **NIE WYKONANO** | Nie przygotowano konta spoza listy ani odrębnej listy testowej; nie badano także trwałości i duplikatów w pełnym cyklu. |
-| M-01 | **NIE WYKONANO** | Mechanizm `@` wskazano w opisie zadania, lecz nie podano osobnych reguł odbiorców; scenariusz pozostaje do eksploracji. |
+| N-01 | **PASS** | Właściciel dodał prywatny komentarz `QA-N01-20260922` do elementu listy. Komentarz był widoczny przy produkcie; autor nie otrzymał własnego powiadomienia. Powtórzono kontrolę dla komentarza pracownika `QA-P03-1790065421989`: również nie pojawił się w jego Inbox. |
+| P-01 | **NIE WYKONANO** | Wcześniej dostępna propozycja była szkicem. W ponownej próbie znaleziono link do przesłanej propozycji, lecz niezalogowany podgląd wyświetlał „PROPOZYCJA NIE JEST JUŻ DOSTĘPNA”, także po odświeżeniu. Nie wysyłano nowej propozycji. |
+| P-03 | **FAIL** | Pracownik dodał prywatny komentarz `QA-P03-1790065421989` do produktu „Dywan shaggy - Carvy Arches Kremowy”. Właściciel widział komentarz i autora `Test Test` przy produkcie, ale po ponad minucie i ponownym wejściu do Inbox nie miał powiadomienia z tą treścią. Szczegóły: BUG-002. |
+| N-02 | **NIE WYKONANO** | Brak aktywnego konta spoza listy; rejestracja wymaga dodatkowego numeru telefonu i kodu SMS. |
+| N-03 | **NIE WYKONANO** | Próba przygotowania drugiej listy nie dała izolacji: pracownik został na niej automatycznie ujęty wśród członków i mógł ją otworzyć. Testową listę przeniesiono do kosza. Nie uznano tej próby za dowód braku powiadomienia u osoby spoza listy. |
+| N-04 | **PASS — wariant anonimowy** | Otwarcie prywatnego adresu edycji listy w niezalogowanej sesji przekierowało na `/logowanie`; nie było możliwości dodania tam komentarza. Nie sprawdzano konta zalogowanego bez uprawnień. |
+| B-01 | **PASS** | Istniejące powiadomienie właściciela o komentarzu klienta występowało dokładnie raz; po odświeżeniu Inbox i w nowej sesji tego samego konta nadal występowało dokładnie raz. |
+| M-01 | **CZĘŚCIOWO** | W Inbox pracownika zastano jedno powiadomienie „Artur Krzysiek oznaczył/a Ciebie w komentarzu” na liście `KOSZTORYS` z treścią `@Test Test ogarnij temat`. Nie wykonano pełnej macierzy oznaczeń dla wszystkich typów komentarzy. |
 
 Wcześniejszy komentarz wpisany w podglądzie klienta przy aktywnej sesji właściciela został zapisany pod jego nazwą. Tę próbę wyłączono z oceny P-02. Nie stanowi dowodu błędu ani poprawnego działania powiadomień klienta.
 
@@ -62,6 +65,24 @@ Wcześniejszy komentarz wpisany w podglądzie klienta przy aktywnej sesji właś
 **Waga / priorytet:** Major / High — pracownik może przeoczyć komentarz klienta. Jest to ocena wpływu z perspektywy użytkownika; przyczyna techniczna nie została ustalona.
 
 **Dowód:** zgodność autora komentarza (`Klient`) i powiadomienia właściciela z właściwą listą oraz produktem; na koncie przypisanego pracownika brak powiadomień. Dane i adresy kont pominięto w publicznym raporcie.
+
+## BUG-002 — prywatny komentarz pracownika nie powiadamia właściciela listy
+
+**Środowisko:** ta sama lista `KOSZTORYS`, dwa potwierdzone konta zespołu, Chrome, 22.09.2026.
+
+**Kroki odtworzenia:**
+
+1. Na koncie przypisanego pracownika otworzyć komentarze produktu „Dywan shaggy - Carvy Arches Kremowy” i kartę **Prywatne**.
+2. Dodać komentarz bez oznaczenia `@`, np. `QA-P03-1790065421989`.
+3. Na koncie właściciela sprawdzić ten sam produkt i Inbox.
+
+**Oczekiwane:** właściciel jako pozostały członek zespołu otrzymuje powiadomienie o komentarzu; autor nie otrzymuje własnego.
+
+**Faktyczne:** komentarz pracownika jest widoczny u właściciela przy produkcie, ale powiadomienie o nim nie pojawia się w Inbox właściciela nawet po ponad minucie i ponownym wejściu. Autor nie otrzymał własnego powiadomienia.
+
+**Waga / priorytet:** Major / High — pozostały członek zespołu może przeoczyć ustalenia pracownika.
+
+**Dowód:** unikalna treść komentarza i jego autor w prywatnych komentarzach po obu stronach, przy braku tej treści w Inbox odbiorcy. Jest to osobna obserwacja manualna; obecny test E2E odtwarza BUG-001.
 
 ## Test E2E
 
@@ -97,8 +118,8 @@ Test tworzy jeden komentarz na uruchomienie. Wyłączono automatyczne ponawianie
 
 ## Ograniczenia i dalsze kroki
 
-- Wynik P-02 dotyczy udostępnionej listy. Komentarza klienta do **wysłanej propozycji** nie testowano.
-- Nie badano konta spoza listy, zmian członkostwa, powiadomień e-mail ani API.
-- Pełny test P-03 wymaga sprawdzenia powiadomienia u pozostałego członka zespołu po prywatnym komentarzu pracownika.
+- Wynik P-02 dotyczy udostępnionej listy. Komentarza klienta do **wysłanej propozycji** nie testowano z powodu niedostępnego podglądu.
+- Nie badano aktywnego konta spoza listy, zmian członkostwa, powiadomień e-mail ani API.
+- P-03 potwierdzono manualnie jako drugi problem; automatyzacja obejmuje tylko BUG-001.
 - Edytor komentarza nie miał jednoznacznej nazwy dostępnościowej; test używa `contenteditable` z rolą `textbox`. Zalecany stabilny atrybut dla aplikacji: `data-testid="client-comment-editor"`.
 - Kontener produktu jest obecnie wyszukiwany względem obrazka i przycisku komentarza. Stabilny `data-testid="client-product-card"` z identyfikatorem produktu ograniczyłby zależność od struktury DOM.
